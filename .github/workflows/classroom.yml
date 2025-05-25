@@ -1,0 +1,38 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Operaciones_Pruebas
+      id: operaciones_pruebas
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Operaciones_Pruebas
+        setup-command: pip install pytest
+        command: pytest tests.py
+        timeout: 10
+        max-score: 10
+    - name: test
+      id: test
+      uses: classroom-resources/autograding-python-grader@v1
+      with:
+        timeout: 10
+        max-score: 10
+        setup-command: ''
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        OPERACIONES_PRUEBAS_RESULTS: "${{steps.operaciones_pruebas.outputs.result}}"
+        TEST_RESULTS: "${{steps.test.outputs.result}}"
+      with:
+        runners: operaciones_pruebas,test
